@@ -1,0 +1,153 @@
+
+PRIMERA PARTE
+
+  1.- Crear un proyecto con vuestras cuentas personales:
+  	El proyecto se llama Practica-GCP-Keep con Id de proyecto: practica-gcp-keep-130182
+  	
+  2.- Dar acceso completo al proyecto al profesor para su revisión (javioreto@gmail.com):
+  	Se da acceso de forma temporal al proyecto a mi cuenta daviddelacruzb@gmail.com con el rol de Editor para simular la revisión como profesor.
+  	Se da acceso al profesor con el rol de Editor a todo el proyecto: javioreto@gmail.com
+
+  3.- Crear varios avisos de facturación según distintos porcentajes de gasto (% a vuestra elección):
+  	He creado 3 presupuestos con diferentes alertas.
+  	Se comprueba que con el rol de Editor no permite visualizar los avisos de facturación.
+  	He intentando asignar desde IAM la función 'Billing Account Viewer' al rol de editor pero no lo permite.
+  	He intentado crear una función personalizada para asignar los permisos siguientes, pero tampoco lo permite, arrojando un warning:
+		billing.budgets.get
+		billing.budgets.list
+	No aplicable para funciones personalizadas en el nivel de proyecto. Estos permisos solo se pueden agregar a funciones personalizadas a nivel de la organización;
+	no tienen efecto en el nivel de proyecto ni en un nivel inferior.
+	
+	Finalmente he conseguido asignar la función 'Visualizador de cuentas de facturación' desde Administración de cuentas de Facturación y permite
+	visualizar correctamente los avisos de facturación.
+  	
+  4.- Mediante Draw.io o una solución equivalente, dibujar la arquitectura final que tendría vuestro proyecto
+      una vez ejecutada la segunda, tercera y cuarta parte de esta práctica.
+      Se pide una única arquitectura unificada con las relaciones entre los servicios, no tres arquitecturas por
+      separado.
+      El entregable de este último punto podrá ser una imagen en jpg o png, una slide de powerpoint o un archivo
+      editable de draw.io.
+
+      
+SEGUNDA PARTE
+
+  1.- Crear una base de datos MySQL mediante CloudSQL:
+  	Se crea la instancia 'instancia-practica-keep' con la etiqueta practica-gcp
+  	La máquina de la base de datos inicialmente se ha creado con 4 núcleos de CPU y 6GB de Ram.
+  	Nombre de la conexión: practica-gcp-keep-130182:europe-west3:instancia-practica-keep
+  
+  2.- Configurar las copias de seguridad automáticas para que se lancen por el medio día:
+  	Se ha configurado las copias de seguridad automáticas para que se lancen entre las 12:00 y las 16:00
+  	
+  3.- Crear un nuevo usuario llamado “alumno” y contraseña “googlecloud”:
+  	Se crea el usuario solicitado.
+  
+  4.- Se deben crear dos bases de datos llamadas “google” y “cloud”:
+  	Se crean las bases de datos solicitadas.
+  	
+  5.- Procede a exportar exclusivamente estas dos bases de datos mediante la función exportar, en formato SQL. 
+      Para lo cual deberás crear un segmento de Cloud Storage.
+      	Se crea el bucket de Cloud Storage con nombre único practica_gcp_keep_2022 y recurso de acceso: gs://practica_gcp_keep_2022
+      	Se exportan las bases de datos solicitadas en formato SQL con nombre de fichero bbdd_export_25012022_practica.sql
+      	
+  6.- Una vez finalizada la exportación, realiza una importación de dicho fichero:
+  	Se realiza la importación de las 2 bases de datos contenidas en el fichero gs://practica_gcp_keep_2022/bbdd_export_25012022_practica.sql
+  	
+  7.- Se comprobarán los logs de auditación para ver si se ha realizado la importación satisfactoriamente:
+  	Se comprueba el registro de operaciones de la instancia y todo está correcto.
+  	
+  8.- Por último, (des)escala la máquina de base de datos a la configuración de CPU y RAM más baja:
+  	Se actualiza la instancia modificando la configuración de la máquina a 1 núcleo de CPU y 3,75 GB de Ram que corresponde a la configuración más baja.
+  	
+  	
+TERCERA PARTE
+
+  1.- Crear una imagen personalizada con un servidor web Apache instalado:
+  	Se crea la imagen personalizada con nombre imagen-base-grupo-instancias
+
+  
+  2.- Usar esa imagen para crear una plantilla de instancia con la configuración mínima de CPU y RAM:
+  	Se crea la plantilla de instancias con nombre plantilla-base
+  
+  3.- Crear un grupo de instancias de autoescalado basado en consumos de CPU muy bajo para forzar un escalado rápido, configurando el tiempo de enfriamiento
+      oportuno para nuestra imagen y que cuente el grupo con un mínimo de 1 instancia y un máximo de 4.
+        Se crea el grupo de instancias con nombre grupo-instancias-practica-keep
+	Uso de CPU 12%
+      	Tiempo de enfriamiento 60segs.
+      	
+
+  4.- Crear una máquina virtual independiente en Compute Engine, que en su directorio local tenga un sencillo script para comprobar si funciona el autoescalado
+       (atacando a la ip propia del grupo de instancias).
+        La VM independiente se llama: maquina-de-ataque
+        El fichero del script está en la ruta: /ataque/script.sh y puede ser ejecutado sin necesidad de elevación de permisos.
+        También se encuentra en /home/daviddelacruzb/script.sh
+
+Errores detectados:
+	Quota for some resources (cpu/instances/...) exceeded. Increase the quota or delete resources to free up more quota.
+
+Tengo una restricción en la cuota de direcciones IP públicas a un máximo de 4.
+Debido a que son 4 instancias a levantar en el grupo de autoescalado más la máquina de ataque, hacen 5 direcciones IP públicas efímeras, por lo que la 4ª instancia del grupo de autoescalado no se llega a generar, dando error de cuota máxima superada en caso de levatamiento de la 4ª instancia del grupo de autoescalado.
+
+Se puede observar en la pestaña Errores del nombre del grupo de instancia creado el error de creación de instancia debido a la cuota excedida de la IP pública:
+QUOTA_EXCEEDED
+ Instance 'grupo-instancias-practica-keep-t566' creation failed: Quota 'IN_USE_ADDRESSES' exceeded. Limit: 4.0 in region europe-west3.
+
+
+Se configura al 12% para que no autoescale sin realizar el ataque (aún así, en pruebas realizadas, a veces autoescala solo sin haber el hecho el ataque).
+
+No entiendo bien el funcionamiento del periodo de inactividad, ya que aunque esté configurado en 60 segundos, el ataque no dura ni 1 minuto y las VM tardan más de 10 minutos en morir cuando no hay carga apenas en las cpu de las VM (creo que es debido al reintento de creación de la VM que falla por la cuota de IPs excedida).
+
+        
+        
+CUARTA PARTE Y BONUS
+
+No me ha dado tiempo a poder realizar la cuarta parte y el bonus.
+
+He invertido muchas horas (entre 3 y 4 días) en pulir el script y realizar pruebas de ataque para comprobar como se comporta el grupo de autoescalado, además de
+monitorizar el uso de la cpu de la instancia base y del grupo de autoescalado para entender su funcionamiento.
+
+No ha sido mi mejor semana desde el día 13 de enero que cumplí años, he dedicado muchas horas para realizar con buen pie esta practica, pero me ha faltado energía y tiempo para poder completarla al 100% como un buen profesional espera.
+Lo siento, se que puedo dar más de mí, pero la situación actual no acompaña, y no será porque no lo haya intentando cada día.
+Gracias por enseñarnos.        
+        
+      
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+
+  	
+

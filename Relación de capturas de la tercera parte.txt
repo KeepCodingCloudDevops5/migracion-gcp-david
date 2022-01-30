@@ -1,0 +1,12 @@
+TERCERA PARTE:
+
+1.- Captura comprobando la instancia base en ejecución antes de lanzar el ataque.
+2.- Captura una vez realizado el ataque.
+3.- Captura con el resultado una vez lanzado el ataque.
+4.- Captura desde la consola web de GCP observando que las instancias están levantadas.
+5.- Captura desde la consola web de GCP donde se observan 3 de las 4 instancias levantadas.
+6.- Captura donde se comprueba el error al crear la 4ª instancia debido a la cuota excedida en direcciones IP públicas.
+7.- Captura donde se observa el pico de uso de CPU en la instancia base tras lanzar el ataque.
+8.- Captura donde se observa el consumo de CPU de las instancias en ejecución después del ataque.
+9.- Captura con la gráfica de uso del nº de instancias en ejecución.
+10.- Captura donde se observa la gráfica de vuelta a la normalidad en el nº de instancias.
