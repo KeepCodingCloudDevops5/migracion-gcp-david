@@ -1,7 +1,7 @@
 # migracion-gcp-david
 Práctica Migración a la nube GCP
 
-El proyecto se llama Practica-GCP-Keep con Id de proyecto: practica-gcp-keep-130182
+<center>El proyecto se llama Practica-GCP-Keep con Id de proyecto: practica-gcp-keep-130182</center>
 
 <h2>Se adjunta a este proyecto de GitHub los siguientes ficheros:</h2>
  
